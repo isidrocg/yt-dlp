@@ -658,7 +658,8 @@ def get_postprocessors(opts):
         yield {
             'key': 'EmbedThumbnail',
             # already_have_thumbnail = True prevents the file from being deleted after embedding
-            'already_have_thumbnail': opts.writethumbnail
+            'already_have_thumbnail': opts.writethumbnail,
+            'crop_thumbnail': opts.cropthumbnail,
         }
         if not opts.writethumbnail:
             opts.writethumbnail = True

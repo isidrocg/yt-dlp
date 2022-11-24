@@ -31,9 +31,10 @@ class EmbedThumbnailPPError(PostProcessingError):
 
 class EmbedThumbnailPP(FFmpegPostProcessor):
 
-    def __init__(self, downloader=None, already_have_thumbnail=False):
+    def __init__(self, downloader=None, already_have_thumbnail=False, crop_thumbnail=False):
         FFmpegPostProcessor.__init__(self, downloader)
         self._already_have_thumbnail = already_have_thumbnail
+        self._crop_thumbnail = crop_thumbnail
 
     def _get_thumbnail_resolution(self, filename, thumbnail_dict):
         def guess():
@@ -90,9 +91,22 @@ class EmbedThumbnailPP(FFmpegPostProcessor):
 
         success = True
         if info['ext'] == 'mp3':
-            options = [
-                '-c', 'copy', '-map', '0:0', '-map', '1:0', '-write_id3v1', '1', '-id3v2_version', '3',
-                '-metadata:s:v', 'title="Album cover"', '-metadata:s:v', 'comment=Cover (front)']
+            # Change tag to id3v2_version 3 to show thumbnail
+            options = ['-id3v2_version', '3']
+            if self._crop_thumbnail:
+                options += [
+                    # Copy audio stream, re-encode resulting thumb
+                    '-c:a', 'copy', '-c:v', 'mjpeg',
+                    # Use the crop filter on the image
+                    '-vf', 'crop=out_w=in_h:in_h'
+                ]
+            else:
+                # Copy both streams instead
+                options += ['-c', 'copy']
+
+            options += [
+                '-map', '0', '-map', '1',
+                '-metadata:s:v', 'title="Album cover"', '-metadata:s:v', 'comment="Cover (Front)"']
 
             self._report_run('ffmpeg', filename)
             self.run_ffmpeg_multiple_files([filename, thumbnail_filename], temp_filename, options)

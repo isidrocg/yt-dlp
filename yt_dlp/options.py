@@ -1549,6 +1549,10 @@ def create_parser():
         action='store_true', dest='embedthumbnail', default=False,
         help='Embed thumbnail in the video as cover art')
     postproc.add_option(
+        '--crop-thumbnail',
+        action='store_true', dest='cropthumbnail', default=False,
+        help='Crop the thumbnail to square; No effect without --embed-thumbnail') 
+    postproc.add_option(
         '--no-embed-thumbnail',
         action='store_false', dest='embedthumbnail',
         help='Do not embed thumbnail (default)')
